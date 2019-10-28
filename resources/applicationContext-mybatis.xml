@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+        xmlns:aop="http://www.springframework.org/schema/aop"  
+        xmlns:p="http://www.springframework.org/schema/p"  
+        xmlns:tx="http://www.springframework.org/schema/tx"  
+        xmlns:context="http://www.springframework.org/schema/context"  
+        xsi:schemaLocation="   
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd   
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd   
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd 
+            http://www.springframework.org/schema/context 
+            http://www.springframework.org/schema/context/spring-context.xsd">  
+            
+            <!-- 扫描service包下的注解 -->
+            <context:component-scan base-package="cn.appsys.service"></context:component-scan>
+            <!-- 读取配置文件 -->
+       <context:property-placeholder location="classpath:database.properties"/>
+       
+    <!-- JNDI获取数据源(使用dbcp连接池) -->  
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" scope="singleton">
+    		<property name="driverClassName" value="${driver}" />  
+			<property name="url" value="${url}" />  
+			<property name="username" value="${user}" />  
+			<property name="password" value="${password}" />
+			<!-- 初始化连接时连接数 -->
+			<property name="initialSize" value="${initialSize}"/>
+			<!-- 连接池中最大的连接数 -->
+			<property name="maxActive" value="${maxActive}"/>
+			<!-- 连接池中最大的空闲连接数 100 50占用 50闲置-->
+			<property name="maxIdle" value="${maxIdle}"/>
+			<!-- 连接池中最小的空闲连接数 -->
+			<property name="minIdle" value="${minIdle}"/>
+			<!-- 最长等待时间 -->
+			<property name="maxWait" value="${maxWait}"/>
+		    <!-- 在超出规定的时间后是否销毁连接 -->
+			<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}"/>
+			<!-- 是或否销毁连接 -->
+			<property name="removeAbandoned" value="${removeAbandoned}"/>
+			<!-- sql 心跳 如果mysql宕机（死机）重启mysql时，我们的应用程序需要重新连接mysql，sql心跳循环校验连接是否畅通-->
+			
+			<property name= "testWhileIdle" value="true"/><!-- 开启循环校验 -->
+			<property name= "testOnBorrow" value="false"/><!-- 对拿到的连接是否校验 -->
+			<property name= "testOnReturn" value="false"/><!-- 对返回的连接是否校验 -->
+			<property name= "validationQuery" value="select 1"/><!-- 校验时使用的sql，sql语句必须简单 -->
+			<property name= "timeBetweenEvictionRunsMillis" value="60000"/><!-- 在0~60000ms之间校验 -->
+			<property name= "numTestsPerEvictionRun" value="${maxActive}"/><!-- 每次校验的连接数 -->
+    </bean>
+     <!-- 配置SqlSessionFactoryBean mybatis中用于读取配置文件，创建会话SqlSession -->
+     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean
+     ">
+          <property name="dataSource" ref="dataSource"></property>
+          <!-- 指定mybatis的配置文件 -->
+          <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+          <!-- 读取指定sql映射文件的位置 如果sql映射文件接口在同一个包下时 -->
+          <property name="mapperLocations">
+            <list>
+               <value>classpath:cn/appsys/dao/*Mapper.xml</value>
+            </list>
+          </property>
+     </bean>
+     
+     <!-- 配置MapperScannerConfigurer:扫描dao包下的类，并且把这些类以bean的形式注册到容器中
+     有了这个配置，我们不需要在spring配置文件中去配置dao层的bean -->
+     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+         <property name="basePackage" value="cn.appsys.dao"></property>
+     </bean>
+       
+       <!-- 事物管理器 -->
+       <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager
+       ">
+          <property name="dataSource" ref="dataSource"></property>
+       </bean>
+       
+       <!--配置事物切面 -->
+       <tx:advice id="txAdvice">
+              <!-- 事物属性 -->
+            <tx:attributes>
+                  <tx:method name="find*" propagation="REQUIRED"/>
+                  <tx:method name="add*" propagation="REQUIRED"/>
+                  <tx:method name="update*" propagation="REQUIRED"/>
+                  <tx:method name="delete*" propagation="REQUIRED"/>
+            </tx:attributes>
+       </tx:advice>
+       
+       <!-- 事物切入 -->
+       <aop:config>
+       <!-- 切入点：事物切入的位置 -->
+         <aop:pointcut expression="execution(* cn.appsys.service.*.*(..))" id="pointcut"/>
+         <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+       </aop:config>
+</beans>
