@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import cn.appsys.dao.DevUserMapper;
+import cn.appsys.pojo.AppInfo;
 import cn.appsys.pojo.DevUser;
 @Service("devUserService")
 public class DevUserServiceImpl implements DevUserService {
@@ -26,6 +27,13 @@ public class DevUserServiceImpl implements DevUserService {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<AppInfo> getAppInfoList() {
+		// TODO Auto-generated method stub
+		
+		return devUserMapper.getAppInfoList();
 	}
 
 }

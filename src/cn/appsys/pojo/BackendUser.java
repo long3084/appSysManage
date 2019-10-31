@@ -75,4 +75,15 @@ public class BackendUser {
 	public void setModifyDate(Date modifyDate) {
 		this.modifyDate = modifyDate;
 	}
+	@Override
+	public String toString() {
+		return "BackendUser [id=" + id + ", userCode=" + userCode
+				+ ", userName=" + userName + ", userPassword=" + userPassword
+				+ ", userType=" + userType + ", createdBy=" + createdBy
+				+ ", creationDate=" + creationDate + ", modifyBy=" + modifyBy
+				+ ", modifyDate=" + modifyDate + ", userTypeName="
+				+ userTypeName + "]";
+	}
+	
+	
 }

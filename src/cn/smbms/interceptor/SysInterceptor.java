@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import cn.appsys.pojo.BackendUser;
 import cn.appsys.pojo.DevUser;
 
 public class SysInterceptor implements HandlerInterceptor {
@@ -29,11 +30,12 @@ public class SysInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
 			Object arg2) throws Exception {
 		// TODO Auto-generated method stub
-		DevUser user=(DevUser)request.getSession().getAttribute("devUser");
-	  if(user!=null){
+		DevUser user=(DevUser)request.getSession().getAttribute("devUserSession");
+		BackendUser backendUser=(BackendUser)request.getSession().getAttribute("userSession");
+	  if(user!=null||backendUser!=null){
 		return true; //将请求放行
 	  }else{
-		  response.sendRedirect(request.getContextPath()+"/401.jsp");
+		  response.sendRedirect(request.getContextPath()+"/403.jsp");
 		return false;   //请求终止
 	  }
 	}
